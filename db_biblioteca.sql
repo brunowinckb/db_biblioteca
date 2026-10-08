@@ -76,3 +76,96 @@ VALUES
 (10, 11, 1, 4.00),
 (11, 12, 2, 7.50),
 (12, 10, 1, 6.50);
+
+-- ________________________________________________________________________________________________________________________________________
+--Q1
+	create VIEW vw_acervo_ordenado as
+
+	select
+		l.titulo,
+		l.isbn,
+		c.nome as categoria,
+		l.taxa_diaria
+
+	from livros l
+	join categorias c on l.categoria_id = c.id
+
+	order by l.taxa_diaria DESC
+
+
+
+-- Q2
+	CREATE VIEW vw_emprestimos_carlos as
+
+	select 
+		leitores.nome,
+		e.id as id_emprestimo,
+		e.data_emprestimo,
+		l.titulo,
+		ie.quantidade,
+		e.status
+
+	from
+		itens_emprestimo ie
+
+	join emprestimos e on ie.emprestimo_id = e.id
+	join livros l ON ie.livro_id = l.id
+	join leitores on e.leitor_id = leitores.id
+
+	WHERE leitores.nome = 'Carlos Silva'
+
+
+
+
+-- Q3
+	CREATE VIEW vw_total_emprestimos as
+
+	select
+		e.id as id_emprestimo,
+		l.nome as leitor,
+		sum(ie.quantidade * livros.taxa_diaria) as valor_total
+
+	from
+		itens_emprestimo ie
+
+	join emprestimos e on ie.emprestimo_id = e.id
+	join livros on ie.livro_id = livros.id
+	join leitores l on e.leitor_id = l.id
+
+	group by id_emprestimo, l.nome
+
+
+
+
+--Q4
+	select
+	livros.titulo as nome_livro
+
+	from
+		livros,
+		categorias
+		
+	WHERE
+		categorias.nome = 'Ficção' AND
+		livros.taxa_diaria > 5 and
+		livros.disponivel = TRUE
+
+
+
+
+--Q5
+	create VIEW vw_faturamento_por_categoria AS
+
+	SELECT
+		c.nome AS categoria,
+		SUM(ie.quantidade * ie.valor_diaria) AS total_arrecadado
+
+	FROM livros l
+
+	JOIN categorias c ON l.categoria_id = c.id
+	JOIN itens_emprestimo ie ON ie.livro_id = l.id
+	JOIN emprestimos e ON ie.emprestimo_id = e.id
+
+	WHERE e.status = 'Devolvido'
+
+	GROUP BY c.nome
